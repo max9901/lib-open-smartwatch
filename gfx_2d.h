@@ -35,7 +35,7 @@ class Graphics2D {
     uint16_t numChunks = height / chunkHeight;
     buffer = new uint16_t*[numChunks];
     if (isRound) {
-      missingPixelColor = rgb565(0, 0, 0);
+      missingPixelColor = rgb565(128, 128, 128);
       chunkXOffsets = new uint16_t[numChunks];
       chunkWidths = new uint16_t[numChunks];
       for (uint16_t i = 0; i < numChunks; i++) {
@@ -300,8 +300,8 @@ class Graphics2D {
     }
   }
 
-  void drawThickLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint8_t radius,
-                     uint16_t color) {  // see p3dt_gfx_2d_license.txt
+  void drawThickLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint8_t radius, uint16_t color,
+                     bool highQuality = false) {  // see p3dt_gfx_2d_license.txt
 
     // see p3dt_gfx_2d_license.txt
     int32_t tmp;
@@ -354,20 +354,28 @@ class Graphics2D {
 
     for (x = x1; x <= x2; x++) {
       if (swapxy == 0) {
-        drawCircle(x, y, radius, color);
-        if (radius > 2) {
-          drawCircle(x, y, radius - 1, color);
-        }
-        if (radius > 3) {
-          drawCircle(x, y, radius - 2, color);
+        if (highQuality) {
+          fillCircle(x, y, radius, color);
+        } else {
+          drawCircle(x, y, radius, color);
+          if (radius > 2) {
+            drawCircle(x, y, radius - 1, color);
+          }
+          if (radius > 3) {
+            drawCircle(x, y, radius - 2, color);
+          }
         }
       } else {
-        drawCircle(y, x, radius, color);
-        if (radius > 2) {
-          drawCircle(y, x, radius - 1, color);
-        }
-        if (radius > 3) {
-          drawCircle(y, x, radius - 2, color);
+        if (highQuality) {
+          fillCircle(y, x, radius, color);
+        } else {
+          drawCircle(y, x, radius, color);
+          if (radius > 2) {
+            drawCircle(y, x, radius - 1, color);
+          }
+          if (radius > 3) {
+            drawCircle(y, x, radius - 2, color);
+          }
         }
       }
 
@@ -847,8 +855,8 @@ class Graphics2D {
     drawLine(rpx(cx, r1, angle), rpy(cy, r1, angle), rpx(cx, r2, angle), rpy(cy, r2, angle), color);
   }
 
-  void drawThickTick(uint8_t cx, uint8_t cy, uint8_t r1, uint8_t r2, float angle, uint8_t radius, uint16_t color) {
-    drawThickLine(rpx(cx, r1, angle), rpy(cy, r1, angle), rpx(cx, r2, angle), rpy(cy, r2, angle), radius, color);
+  void drawThickTick(uint8_t cx, uint8_t cy, uint8_t r1, uint8_t r2, float angle, uint8_t radius, uint16_t color, bool highQuality = false) {
+    drawThickLine(rpx(cx, r1, angle), rpy(cy, r1, angle), rpx(cx, r2, angle), rpy(cy, r2, angle), radius, color, highQuality);
   }
 
   void drawHourTicks(uint8_t cx, uint8_t cy, uint8_t r1, uint8_t r2, uint16_t color) {
@@ -863,7 +871,7 @@ class Graphics2D {
   }
 
   void drawArc(int32_t cx, int32_t cy, float start, float stop, uint16_t steps, uint16_t radius, uint8_t lineRadius,
-               uint16_t color) {
+               uint16_t color, bool highQuality = false) {
     int32_t x1 = rpx(cx, radius, start);
     int32_t y1 = rpy(cy, radius, start);
     // printf("\ndraw from %f,%f in %d steps", start, stop, steps);
@@ -877,7 +885,7 @@ class Graphics2D {
       int32_t x2 = rpx(cx, radius, start + segmentLength);
       int32_t y2 = rpy(cy, radius, start + segmentLength);
       // printf("\n gfx2d.drawLine(%d, %d, %d, %d, color);", x1, y1, x2, y2);
-      drawThickLine(x1, y1, x2, y2, lineRadius, color);
+      drawThickLine(x1, y1, x2, y2, lineRadius, color, highQuality);
       x1 = x2;
       y1 = y2;
     }
